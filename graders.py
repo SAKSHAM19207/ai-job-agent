@@ -1,0 +1,134 @@
+"""Standalone task graders for validator discovery."""
+
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import Any
+
+
+def _clamp(score: float) -> float:
+    return max(0.05, min(0.95, score))
+
+
+def _normalize_trajectory(trajectory: Any) -> list[dict[str, Any]]:
+    if trajectory is None:
+        return []
+
+    if isinstance(trajectory, dict):
+        for key in ("trajectory", "steps", "history", "records"):
+            value = trajectory.get(key)
+            if isinstance(value, list):
+                trajectory = value
+                break
+        else:
+            trajectory = [trajectory]
+    elif hasattr(trajectory, "trajectory"):
+        trajectory = getattr(trajectory, "trajectory")
+    elif hasattr(trajectory, "steps"):
+        trajectory = getattr(trajectory, "steps")
+    elif not isinstance(trajectory, list):
+        if isinstance(trajectory, Iterable) and not isinstance(trajectory, (str, bytes)):
+            trajectory = list(trajectory)
+        else:
+            trajectory = [trajectory]
+
+    normalized: list[dict[str, Any]] = []
+    for step in trajectory:
+        if isinstance(step, dict):
+            normalized.append(step)
+            continue
+
+        normalized.append(
+            {
+                "action": getattr(step, "action", getattr(step, "action_type", None)),
+                "match_ratio": getattr(step, "match_ratio", None),
+                "resume_score": getattr(step, "resume_score", None),
+            }
+        )
+
+    return normalized
+
+
+def _get_action(step: dict[str, Any]) -> str:
+    action = step.get("action") or step.get("action_type")
+    if isinstance(action, dict):
+        action = action.get("action_type")
+    return str(action or "").upper()
+
+
+def _get_match_ratio(step: dict[str, Any]) -> float | None:
+    for key in ("match_ratio", "match", "score"):
+        value = step.get(key)
+        if isinstance(value, (int, float)):
+            return float(value)
+
+    observation = step.get("observation") or {}
+    current_job = observation.get("current_job") or {}
+    user_profile = observation.get("user_profile") or {}
+    resume_state = observation.get("resume_state") or {}
+
+    job_skills = current_job.get("skills_required") or []
+    user_skills = (user_profile.get("skills") or []) + (resume_state.get("optimized_skills") or [])
+    if not job_skills:
+        return None
+
+    return len(set(user_skills).intersection(job_skills)) / max(len(job_skills), 1)
+
+
+def grade_easy(trajectory: Any) -> float:
+    steps = _normalize_trajectory(trajectory)
+    if not steps:
+        return 0.05
+
+    successes = 0.0
+    for step in steps:
+        if _get_action(step) == "APPLY" and (_get_match_ratio(step) or 0.0) >= 0.7:
+            successes += 1.0
+
+    return _clamp(0.05 + 0.90 * (successes / len(steps)))
+
+
+def grade_medium(trajectory: Any) -> float:
+    steps = _normalize_trajectory(trajectory)
+    if not steps:
+        return 0.05
+
+    successes = 0.0
+    optimized = False
+
+    for step in steps:
+        action = _get_action(step)
+        match_ratio = _get_match_ratio(step) or 0.0
+
+        if 0.5 <= match_ratio < 0.7 and action == "OPTIMIZE_RESUME":
+            optimized = True
+
+        if action == "APPLY" and optimized and match_ratio >= 0.5:
+            successes += 1.0
+            optimized = False
+
+        if action == "SKIP":
+            optimized = False
+
+    return _clamp(0.05 + 0.90 * (successes / len(steps)))
+
+
+def grade_hard(trajectory: Any) -> float:
+    steps = _normalize_trajectory(trajectory)
+    if not steps:
+        return 0.05
+
+    successes = 0.0
+    for step in steps:
+        action = _get_action(step)
+        match_ratio = _get_match_ratio(step) or 0.0
+
+        if match_ratio < 0.5 and action == "SKIP":
+            successes += 1.0
+        elif match_ratio >= 0.7 and action == "APPLY":
+            successes += 1.0
+
+    return _clamp(0.05 + 0.90 * min(successes / len(steps), 1.0))
+
+
+__all__ = ["grade_easy", "grade_medium", "grade_hard"]
