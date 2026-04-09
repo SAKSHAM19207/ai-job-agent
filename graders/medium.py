@@ -23,4 +23,4 @@ def grade(trajectory: Any) -> float:
         if action == "SKIP":
             optimized = False
 
-    return clamp(0.05 + 0.90 * (successes / len(steps)))
+    return clamp(0.05 + 0.90 * (successes / max(len(steps), 1)))
