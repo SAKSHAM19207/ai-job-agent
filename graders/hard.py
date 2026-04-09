@@ -16,4 +16,4 @@ def grade(trajectory: Any) -> float:
         elif match_ratio >= 0.7 and action == "APPLY":
             successes += 1.0
 
-    return clamp(0.05 + 0.90 * min(successes / len(steps), 1.0))
+    return clamp(0.05 + 0.90 * (successes / max(len(steps), 1)))
