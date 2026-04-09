@@ -43,5 +43,5 @@ server = "server.app:main"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["server"]
-py-modules = ["app", "client", "graders", "inference", "models", "schemas"]
+packages = ["server", "graders"]
+py-modules = ["app", "client", "inference", "models", "schemas"]
