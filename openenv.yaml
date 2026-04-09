@@ -8,14 +8,26 @@ app: server.app:app
 
 tasks:
   - id: jcoe-easy-v0
-    description: Apply to clear high-match jobs with minimal detours.
-    entry_point: server.jaoe_environment:JaoeEnvironment
-    grader: graders:grade_easy
+    name: "Easy: Clear Matches"
+    description: "Apply to clear high-match jobs with minimal detours."
+    difficulty: "easy"
+    module: "server.jaoe_environment:JaoeEnvironment"
+    env:
+      JAOE_TASK: "jcoe-easy-v0"
+    grader: "graders:grade_easy"
   - id: jcoe-medium-v0
-    description: Optimize before applying to partial-match roles.
-    entry_point: server.jaoe_environment:JaoeEnvironment
-    grader: graders:grade_medium
+    name: "Medium: Optimization Required"
+    description: "Optimize before applying to partial-match roles."
+    difficulty: "medium"
+    module: "server.jaoe_environment:JaoeEnvironment"
+    env:
+      JAOE_TASK: "jcoe-medium-v0"
+    grader: "graders:grade_medium"
   - id: jcoe-hard-v0
-    description: Skip weak fits and apply only when the match is strong.
-    entry_point: server.jaoe_environment:JaoeEnvironment
-    grader: graders:grade_hard
+    name: "Hard: Selective Filtering"
+    description: "Skip weak fits and apply only when the match is strong."
+    difficulty: "hard"
+    module: "server.jaoe_environment:JaoeEnvironment"
+    env:
+      JAOE_TASK: "jcoe-hard-v0"
+    grader: "graders:grade_hard"
