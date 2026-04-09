@@ -13,7 +13,7 @@ tasks:
     module: "server.jaoe_environment:JaoeEnvironment"
     env:
       JAOE_TASK: "jcoe-easy-v0"
-    grader: ./graders/easy.py:grade
+    grader: graders/easy.py:grade
   - id: jcoe-medium-v0
     name: "Medium: Optimization Required"
     description: "Optimize before applying to partial-match roles."
@@ -21,7 +21,7 @@ tasks:
     module: "server.jaoe_environment:JaoeEnvironment"
     env:
       JAOE_TASK: "jcoe-medium-v0"
-    grader: ./graders/medium.py:grade
+    grader: graders/medium.py:grade
   - id: jcoe-hard-v0
     name: "Hard: Selective Filtering"
     description: "Skip weak fits and apply only when the match is strong."
@@ -29,4 +29,4 @@ tasks:
     module: "server.jaoe_environment:JaoeEnvironment"
     env:
       JAOE_TASK: "jcoe-hard-v0"
-    grader: ./graders/hard.py:grade
+    grader: graders/hard.py:grade
