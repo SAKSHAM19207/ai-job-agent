@@ -4,7 +4,6 @@ description: AI job application environment with three graded task variants.
 type: space
 runtime: fastapi
 entrypoint: app.py
-app: server.app:app
 
 tasks:
   - id: jcoe-easy-v0
@@ -14,7 +13,7 @@ tasks:
     module: "server.jaoe_environment:JaoeEnvironment"
     env:
       JAOE_TASK: "jcoe-easy-v0"
-    grader: "graders.easy:grade"
+    grader: graders.easy.grade
   - id: jcoe-medium-v0
     name: "Medium: Optimization Required"
     description: "Optimize before applying to partial-match roles."
@@ -22,7 +21,7 @@ tasks:
     module: "server.jaoe_environment:JaoeEnvironment"
     env:
       JAOE_TASK: "jcoe-medium-v0"
-    grader: "graders.medium:grade"
+    grader: graders.medium.grade
   - id: jcoe-hard-v0
     name: "Hard: Selective Filtering"
     description: "Skip weak fits and apply only when the match is strong."
@@ -30,4 +29,4 @@ tasks:
     module: "server.jaoe_environment:JaoeEnvironment"
     env:
       JAOE_TASK: "jcoe-hard-v0"
-    grader: "graders.hard:grade"
+    grader: graders.hard.grade
